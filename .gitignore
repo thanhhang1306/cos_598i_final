@@ -14,6 +14,9 @@ data/
 3rdparty/tpch-dbgen/
 3rdparty/ssb-dbgen/
 
+# Slurm job logs
+results/
+
 # Prerequisites
 *.d
 

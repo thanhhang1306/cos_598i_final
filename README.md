@@ -138,6 +138,25 @@ cd build/release
 ./run_ssb 1 ../../data/ssb/1/ 4
 ```
 
+### On Slurm (Adroit)
+
+For measurement-grade runs, use the batch script in `slurm/`. It requests an exclusive Skylake node, pins the benchmark to socket 0 with local memory via `numactl --cpunodebind=0 --membind=0` (approximating the paper's single-socket setup), and dumps CPU/NUMA/kernel provenance into the job log.
+
+```bash
+# From the project root, one-time:
+mkdir -p results
+
+# Submit a TPC-H SF1 single-threaded run (5 repetitions):
+sbatch slurm/run_tpch_sf1.sh
+
+# Check status:
+squeue -u $USER # or squeue --me
+
+# Logs land in results/tpch_sf1_<jobid>.out and .err
+```
+
+Submit from the repo root -- the script's `--output=results/...` directive is interpreted relative to the submission directory.
+
 ## Notes
 
 ### Performance counter overhead
