@@ -170,6 +170,7 @@ Submit from the repo root -- the scripts' `--output=results/...` directives are 
 | Script               | Reproduces                          | Data needed       |
 |----------------------|-------------------------------------|-------------------|
 | `run_tpch_sf1.sh`    | TPC-H SF1, single-threaded, 5 reps  | `data/tpch/sf1/`  |
+| `run_tpch_sf1_vec.sh`| TPC-H SF1, vectorSize sweep (powers of 2, 8..32768), 1 thread, 5 reps each | `data/tpch/sf1/` |
 | `run_tpch_sf10.sh`   | TPC-H SF10, single-threaded, 5 reps | `data/tpch/sf10/` |
 | `run_tpch_sf10_mt.sh`| TPC-H SF10, threads={1,16,32}, 5 reps each | `data/tpch/sf10/` |
 | `run_ssb_sf1.sh`     | SSB SF1, single-threaded, 5 reps    | `data/ssb/1/`     |
