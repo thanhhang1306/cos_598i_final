@@ -138,24 +138,39 @@ cd build/release
 ./run_ssb 1 ../../data/ssb/1/ 4
 ```
 
-### On Slurm (Adroit)
+### Slurm (Adroit)
 
-For measurement-grade runs, use the batch script in `slurm/`. It requests an exclusive Skylake node, pins the benchmark to socket 0 with local memory via `numactl --cpunodebind=0 --membind=0` (approximating the paper's single-socket setup), and dumps CPU/NUMA/kernel provenance into the job log.
+Use the batch scripts in `slurm/` to run benchmarks on a compute node. All scripts request an exclusive node and dump CPU/NUMA/kernel provenance to the job log. Single-threaded scripts additionally pin to socket 0 with local memory via `numactl --cpunodebind=0 --membind=0` (approximating the paper's single-socket setup).
 
 ```bash
 # From the project root, one-time:
 mkdir -p results
 
-# Submit a TPC-H SF1 single-threaded run (5 repetitions):
-sbatch slurm/run_tpch_sf1.sh
+# Submit any of the scripts below:
+sbatch slurm/<script>.sh
 
 # Check status:
-squeue -u $USER # or squeue --me
+squeue --me
 
-# Logs land in results/tpch_sf1_<jobid>.out and .err
+# Logs land in results/<job-name>_<jobid>.{out,err}
 ```
 
-Submit from the repo root -- the script's `--output=results/...` directive is interpreted relative to the submission directory.
+Submit from the repo root -- the scripts' `--output=results/...` directives are interpreted relative to the submission directory.
+
+#### Available scripts
+
+| Script               | Reproduces                          | Data needed       |
+|----------------------|-------------------------------------|-------------------|
+| `run_tpch_sf1.sh`    | TPC-H SF1, single-threaded, 5 reps  | `data/tpch/sf1/`  |
+| `run_ssb_sf1.sh`     | SSB SF1, single-threaded, 5 reps    | `data/ssb/1/`     |
+
+#### Pinning to a specific node
+
+For final measurement runs, you can pin to one physical node so all results come from the same silicon:
+
+```bash
+sbatch --nodelist=adroit-16 slurm/run_ssb_sf1.sh
+```
 
 ## Notes
 
