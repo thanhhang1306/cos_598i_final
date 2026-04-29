@@ -4,6 +4,7 @@
 #include "common/runtime/Barrier.hpp"
 #include "common/runtime/MemoryPool.hpp"
 #include "tbb/task_group.h"
+#include <cstdlib>
 #include <deque>
 #include <functional>
 #include <iostream>
@@ -80,24 +81,30 @@ inline void WorkerGroup::run(std::function<void()> f) {
    tbb::task_group g;
    auto barriers = HierarchicBarrier::create(size);
    int64_t group = -1;
+   // When set, skip the hard-coded thread-i-to-CPU-i pinning so that
+   // numactl/Slurm CPU affinity inherited from the parent actually controls
+   // worker placement (needed for NUMA experiments).
+   const bool unpinWorkers = std::getenv("unpinWorkers") != nullptr;
    for (size_t i = 0; i < size - 1; ++i) {
       if (i % HierarchicBarrier::threadsPerBarrier == 0) ++group;
       threads.emplace_back(this, f, barriers[group]);
       auto worker = &threads.back();
-      g.run([worker, i]() {
+      g.run([worker, i, unpinWorkers]() {
 
 #ifndef __APPLE__
          pthread_t currentThread = pthread_self();
          pthread_setname_np(currentThread,
                             ("workerPool " + std::to_string(i)).c_str());
-         cpu_set_t cpuset;
-         CPU_ZERO(&cpuset);
-         CPU_SET(i, &cpuset);
-         if (pthread_setaffinity_np(currentThread, sizeof(cpu_set_t),
-                                    &cpuset) != 0) {
-            throw std::runtime_error("Could not pin thread " +
-                                     std::to_string(i) + " to thread " +
-                                     std::to_string(i));
+         if (!unpinWorkers) {
+            cpu_set_t cpuset;
+            CPU_ZERO(&cpuset);
+            CPU_SET(i, &cpuset);
+            if (pthread_setaffinity_np(currentThread, sizeof(cpu_set_t),
+                                       &cpuset) != 0) {
+               throw std::runtime_error("Could not pin thread " +
+                                        std::to_string(i) + " to thread " +
+                                        std::to_string(i));
+            }
          }
 #else
          compat::unused(i);

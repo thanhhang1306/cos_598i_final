@@ -12,6 +12,10 @@
 
 set -euo pipefail
 
+# Disable WorkerGroup's hard-coded thread-i-to-CPU-i pinning so the
+# numactl mask below actually controls worker placement.
+export unpinWorkers=1
+
 PROJECT="${PROJECT:-${SLURM_SUBMIT_DIR:-$(pwd)}}"
 
 BIN="$PROJECT/build/release/run_tpch"
