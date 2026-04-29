@@ -49,3 +49,6 @@ results/
 *.exe
 *.out
 *.app
+
+# Tracked benchmark outputs (override *.out for these)
+!clean-results/*.out
