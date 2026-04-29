@@ -23,33 +23,7 @@ git clone git@github.com:thanhhang1306/cos_598i_final.git
 cd cos_598i_final
 ```
 
-### 2. Patch CMakeLists.txt
-
-Two changes from the original:
-
-a) Bump C++ standard to 17 and CMake minimum to 3.10 (compatibility with GCC 11 and modern CMake):
-
-```
-cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
-set(CMAKE_CXX_STANDARD 17)
-```
-
-Also update the flag in `CMAKE_CXX_FLAGS` from `-std=c++14` to `-std=c++17`.
-
-b) Suppress warnings-as-errors for the vendored Google Test (old version triggers `-Wdeprecated-copy` and `-Wmaybe-uninitialized` on GCC 11). Add immediately after the `add_subdirectory` for googletest:
-
-```cmake
-add_subdirectory("${CMAKE_BINARY_DIR}/googletest-src"
-                 "${CMAKE_BINARY_DIR}/googletest-build")
-target_compile_options(gtest PRIVATE -Wno-error)
-target_compile_options(gtest_main PRIVATE -Wno-error)
-target_compile_options(gmock PRIVATE -Wno-error)
-target_compile_options(gmock_main PRIVATE -Wno-error)
-```
-
-No other changes to project source code are required.
-
-### 3. Build
+### 2. Build
 
 ```bash
 mkdir -p build/release && cd build/release
@@ -63,13 +37,23 @@ This produces:
 - `test_all` -- unit tests
 - `run_prim` -- primitive micro-benchmarks
 
-### 4. Verify build (data-independent tests)
+### 3. Verify build (data-independent tests)
 
 ```bash
 ./test_all --gtest_filter="GTEQ*:Scatter*:Partition*:Join*:HashGroupT*:HashGroupSmallBuf*:Hashtable*:BlockRelation*:Mmap*:PartitionedDeque*:Stack*"
 ```
 
 All 19 tests should pass. TPC-H and SSB tests will fail at this point (no data yet).
+
+### 4. Populate perf event cache (recommended)
+
+`run_tpch` and `run_ssb` use the vendored `jevents` library to read CPU performance counters via Intel's per-CPU event catalog. Without it, the benchmark still produces query timings, but the `Bandwidth`, `all_rd`, `stores`, `loads`, and `mem_stall` columns will be zero, and you'll see warnings like `Cannot parse qualifier mem_load_retired.l3_miss` on every run.
+
+```bash
+python3 3rdparty/jevents/event_download.py
+```
+
+One-time download into `~/.cache/pmu-events/`. The bundled downloader has been ported to Python 3 and updated for Intel's current perfmon repo and JSON format -- the upstream copy targets a defunct host and won't work as-is.
 
 ## Data Generation
 
@@ -156,28 +140,6 @@ cd build/release
 
 ## Notes
 
-### Performance counter event catalog (jevents)
+### Performance counter overhead
 
-`run_tpch` and `run_ssb` use the vendored `jevents` library to read CPU performance counters. On first run you'll see warnings like:
-
-```
-Cannot parse qualifier mem_load_retired.l3_miss
-Error resolving perf event mem_load_retired.l3_miss
-```
-
-These are non-fatal -- the benchmark still produces timings, but several output columns (`Bandwidth`, `all_rd`, `stores`, `loads`, `mem_stall`) will be zero. To populate them, download Intel's per-CPU event catalog into `~/.cache/pmu-events/`:
-
-```bash
-python3 3rdparty/jevents/event_download.py
-```
-
-The bundled `event_download.py` shipped by the upstream project is **Python 2** and points at the now-defunct `download.01.org/perfmon`. The script in this repo has been modernized:
-
-- Python 3 syntax (`print()`, `urllib.request`, etc.)
-- New source URL: `https://raw.githubusercontent.com/intel/perfmon/main`
-- Tolerates the new 7-column `mapfile.csv`
-- Handles stepping-range entries like `GenuineIntel-6-55-[56789ABCDEF]` (needed to disambiguate Skylake-SP from Cascade Lake-SP, which share model `0x55`) while keeping the on-disk filename in the no-stepping form (`GenuineIntel-6-55-core.json`) that jevents' C resolver expects
-- Unwraps the post-2024 Intel JSON wrapper (`{"Header": ..., "Events": [...]}`) into the bare event array the bundled jevents parser requires
-- Treats the optional `readme.txt` 404 as non-fatal
-
-Once the cache is populated, all perf-counter columns are filled. Note that actually collecting these counters adds measurable overhead -- per-query timings will be noticeably higher than they were when the events silently failed to resolve. This is expected and not a regression.
+Once the jevents cache is populated (Setup step 4), all perf-counter columns are filled. Actually collecting these counters adds measurable overhead -- per-query timings will be noticeably higher than they were when the events silently failed to resolve. This is expected and not a regression.
