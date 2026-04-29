@@ -16,6 +16,7 @@ Runs in this directory were produced by the binary at `build/release/` compiled 
 | `tpch_sf10_<jobid>.out` | `slurm/run_tpch_sf10.sh` |
 | `tpch_sf10_mt_<jobid>.out` | `slurm/run_tpch_sf10_mt.sh` |
 | `tpch_sf10_simd_<jobid>.out` | `slurm/run_tpch_sf10_simd.sh` |
+| `tpch_sf10_numa_<jobid>.out` | `slurm/run_tpch_sf10_numa.sh` |
 | `ssb_sf1_<jobid>.out` | `slurm/run_ssb_sf1.sh` |
 | `ssb_sf30_<jobid>.out` | `slurm/run_ssb_sf30.sh` |
 | `ssb_sf30_mt_<jobid>.out` | `slurm/run_ssb_sf30_mt.sh` |
