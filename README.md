@@ -27,9 +27,13 @@ cd cos_598i_final
 
 ```bash
 mkdir -p build/release && cd build/release
-cmake -DCMAKE_BUILD_TYPE=Release ../..
+cmake -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG -march=skylake-avx512 -mtune=skylake-avx512" \
+      -DCMAKE_C_FLAGS_RELEASE="-O3 -DNDEBUG -march=skylake-avx512" ../..
 make -j8
 ```
+
+The explicit `-march=skylake-avx512` targets Adroit's Skylake compute nodes regardless of which login node compiled the binary. The default `-march=native` would inherit the login node's CPU (currently Cascade Lake-SP), which produces a binary that may contain instructions not present on Skylake.
 
 This produces:
 - `run_tpch` -- TPC-H benchmark runner
