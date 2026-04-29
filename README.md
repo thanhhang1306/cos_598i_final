@@ -101,6 +101,14 @@ mkdir -p ../../data/ssb/1/cached
 cp *.tbl ../../data/ssb/1/
 ```
 
+For SF=30:
+
+```bash
+./build/dbgen -b dists.dss -v -s 30
+mkdir -p ../../data/ssb/30/cached
+cp *.tbl ../../data/ssb/30/
+```
+
 ### Verify with full test suite
 
 ```bash
@@ -162,7 +170,9 @@ Submit from the repo root -- the scripts' `--output=results/...` directives are 
 | Script               | Reproduces                          | Data needed       |
 |----------------------|-------------------------------------|-------------------|
 | `run_tpch_sf1.sh`    | TPC-H SF1, single-threaded, 5 reps  | `data/tpch/sf1/`  |
+| `run_tpch_sf10.sh`   | TPC-H SF10, single-threaded, 5 reps | `data/tpch/sf10/` |
 | `run_ssb_sf1.sh`     | SSB SF1, single-threaded, 5 reps    | `data/ssb/1/`     |
+| `run_ssb_sf30.sh`    | SSB SF30, single-threaded, 5 reps   | `data/ssb/30/`    |
 
 #### Pinning to a specific node
 
