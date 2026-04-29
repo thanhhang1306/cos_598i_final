@@ -6,6 +6,14 @@ plot/*.log
 plot/*.tex
 .Rhistory
 
+# Generated TPC-H / SSB data
+data/
+3rdparty/data/
+
+# Cloned third-party data generators
+3rdparty/tpch-dbgen/
+3rdparty/ssb-dbgen/
+
 # Prerequisites
 *.d
 

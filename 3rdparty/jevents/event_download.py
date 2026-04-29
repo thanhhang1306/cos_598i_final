@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2014, Intel Corporation
 # Author: Andi Kleen
 #
@@ -18,18 +18,20 @@
 # event_download.py cpustr...  Download for specific CPU
 import sys
 import re
-from urllib2 import urlopen, URLError
+import json as _json
+from urllib.request import urlopen
+from urllib.error import URLError
 import os
 import string
 from fnmatch import fnmatch
 
-urlpath = 'https://download.01.org/perfmon'
+urlpath = 'https://raw.githubusercontent.com/intel/perfmon/main'
 mapfile = 'mapfile.csv'
 modelpath = urlpath + "/" + mapfile
 
-def get_cpustr():
+def _read_cpuinfo():
     f = open('/proc/cpuinfo', 'r')
-    cpu = [None, None, None]
+    cpu = [None, None, None, None]
     for j in f:
         n = j.split()
         if n[0] == 'vendor_id':
@@ -38,9 +40,23 @@ def get_cpustr():
             cpu[2] = int(n[2])
         elif n[0] == 'cpu' and n[1] == 'family':
             cpu[1] = int(n[3])
-        if all(cpu):
+        elif n[0] == 'stepping' and n[1] == ':':
+            cpu[3] = int(n[2])
+        if all(x is not None for x in cpu):
             break
+    f.close()
+    return cpu
+
+def get_cpustr():
+    # Filename form expected by jevents' C resolver (cpustr.c): no stepping.
+    cpu = _read_cpuinfo()
     return "%s-%d-%X" % (cpu[0], cpu[1], cpu[2])
+
+def get_cpustr_match():
+    # Mapfile-matching form: includes stepping, since post-2024 entries
+    # like "GenuineIntel-6-55-[56789ABCDEF]" disambiguate SKX-SP vs CLX-SP.
+    cpu = _read_cpuinfo()
+    return "%s-%d-%X-%X" % (cpu[0], cpu[1], cpu[2], cpu[3])
 
 def sanitize(s, a):
     o = ""
@@ -74,7 +90,7 @@ NUM_TRIES = 3
 
 def getfile(url, dir, fn):
     tries = 0
-    print "Downloading", url, "to", fn
+    print("Downloading", url, "to", fn)
     while True:
         try:
             f = urlopen(url)
@@ -83,10 +99,10 @@ def getfile(url, dir, fn):
             tries += 1
             if tries >= NUM_TRIES:
                 raise
-            print "retrying download"
+            print("retrying download")
             continue
         break
-    o = open(os.path.join(dir, fn), "w")
+    o = open(os.path.join(dir, fn), "wb")
     o.write(data)
     o.close()
     f.close()
@@ -102,19 +118,33 @@ def download(match, key=["core"], link=True):
             n = j.rstrip().split(",")
             if len(n) < 4:
                 if len(n) > 0:
-                    print "Cannot parse", n
+                    print("Cannot parse", n)
                 continue
-            cpu, version, name, type = n
-            if not fnmatch(cpu, match) or (key is not None and type not in key) or type.startswith("EventType"):
+            cpu, version, name, type = n[:4]
+            cpu_matches = fnmatch(cpu, match) or fnmatch(match, cpu)
+            if not cpu_matches or (key is not None and type not in key) or type.startswith("EventType"):
                 continue
-            cpu = sanitize(cpu, allowed_chars)
+            # Strip stepping so the filename matches what jevents' C resolver
+            # looks for (vendor-family-model, no stepping).
+            cpu_for_fname = sanitize(re.sub(r'-[0-9A-Fa-f]+$', '', match), allowed_chars)
             url = urlpath + name
-            fn = "%s-%s.json" % (cpu, type)
+            fn = "%s-%s.json" % (cpu_for_fname, type)
             try:
                 os.remove(os.path.join(dir, fn))
             except OSError:
                 pass
             getfile(url, dir, fn)
+            # Post-2024 Intel JSON wraps events in {"Header":..., "Events":[...]}
+            # but jevents' C parser expects a bare top-level array. Unwrap it.
+            try:
+                fpath = os.path.join(dir, fn)
+                with open(fpath, 'rb') as jf:
+                    obj = _json.loads(jf.read())
+                if isinstance(obj, dict) and 'Events' in obj:
+                    with open(fpath, 'w') as jf:
+                        _json.dump(obj['Events'], jf, indent=2)
+            except (ValueError, OSError):
+                pass
             if link:
                 lname = re.sub(r'.*/', '', name)
                 lname = sanitize(lname, allowed_chars)
@@ -125,27 +155,31 @@ def download(match, key=["core"], link=True):
                 try:
                     os.symlink(fn, os.path.join(dir, lname))
                 except OSError as e:
-                    print >>sys.stderr, "Cannot link %s to %s:" % (name, lname), e
+                    print("Cannot link %s to %s:" % (name, lname), e, file=sys.stderr)
             found += 1
         models.close()
-        getfile(urlpath + "/readme.txt", dir, "readme.txt")
+        # readme.txt is optional (the GitHub-hosted perfmon repo doesn't ship one)
+        try:
+            getfile(urlpath + "/readme.txt", dir, "readme.txt")
+        except (URLError, IOError):
+            pass
     except URLError as e:
-        print >>sys.stderr, "Cannot access event server:", e
-        print >>sys.stderr, "If you need a proxy to access the internet please set it with:"
-        print >>sys.stderr, "\texport https_proxy=http://proxyname..."
-        print >>sys.stderr, "If you are not connected to the internet please run this on a connected system:"
-        print >>sys.stderr, "\tevent_download.py '%s'" % (match)
-        print >>sys.stderr, "and then copy ~/.cache/pmu-events to the system under test"
-        print >>sys.stderr, "To get events for all possible CPUs use:"
-        print >>sys.stderr, "\tevent_download.py -a"
+        print("Cannot access event server:", e, file=sys.stderr)
+        print("If you need a proxy to access the internet please set it with:", file=sys.stderr)
+        print("\texport https_proxy=http://proxyname...", file=sys.stderr)
+        print("If you are not connected to the internet please run this on a connected system:", file=sys.stderr)
+        print("\tevent_download.py '%s'" % (match), file=sys.stderr)
+        print("and then copy ~/.cache/pmu-events to the system under test", file=sys.stderr)
+        print("To get events for all possible CPUs use:", file=sys.stderr)
+        print("\tevent_download.py -a", file=sys.stderr)
     except OSError as e:
-        print >>sys.stderr, "Cannot write events file:", e
+        print("Cannot write events file:", e, file=sys.stderr)
     return found
 
 def download_current(link=False):
     """Download JSON event list for current cpu.
        Returns >0 when a event list is found"""
-    return download(get_cpustr(), link=link)
+    return download(get_cpustr_match(), link=link)
 
 def eventlist_name(name=None, key="core"):
     if not name:
@@ -167,7 +201,7 @@ if __name__ == '__main__':
 
     cpustr = get_cpustr()
     if args.verbose or args.mine:
-        print "My CPU", cpustr
+        print("My CPU", cpustr)
     if args.mine:
         sys.exit(0)
     d = getdir()
@@ -181,8 +215,8 @@ if __name__ == '__main__':
             found += download(j, link=args.link)
 
     if found == 0:
-        print >>sys.stderr, "Nothing found"
+        print("Nothing found", file=sys.stderr)
 
     el = eventlist_name()
     if os.path.exists(el):
-        print "my event list", el
+        print("my event list", el)

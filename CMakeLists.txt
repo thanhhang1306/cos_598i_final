@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 if(UNIX AND NOT APPLE)
   set(LINUX true)
@@ -14,7 +14,7 @@ else()
 set(CMAKE_C_COMPILER gcc)
 set(CMAKE_CXX_COMPILER g++)
 endif()
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 OPTION(VECTORWISE_BRANCHING "Use branching vectorwise primitives" OFF)
@@ -28,7 +28,7 @@ OPTION(HASH_SIZE_32 OFF)
 
 
 # Compiler flags for the different targets
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -std=c++14 -fPIC -Wall -Wextra -Wno-psabi -fno-omit-frame-pointer -Wno-unknown-pragmas ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native -std=c++17 -fPIC -Wall -Wextra -Wno-psabi -fno-omit-frame-pointer -Wno-unknown-pragmas ")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -Wall -Wextra -fno-omit-frame-pointer -march=native -fdiagnostics-color ")
 
 
@@ -91,6 +91,10 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 # and gmock_main
 add_subdirectory("${CMAKE_BINARY_DIR}/googletest-src"
                  "${CMAKE_BINARY_DIR}/googletest-build")
+target_compile_options(gtest PRIVATE -Wno-error)
+target_compile_options(gtest_main PRIVATE -Wno-error)
+target_compile_options(gmock PRIVATE -Wno-error)
+target_compile_options(gmock_main PRIVATE -Wno-error)
 
 # The gtest/gmock targets carry header search path
 # dependencies automatically when using CMake 2.8.11 or
@@ -117,7 +121,7 @@ ELSE(DATADIR)
 ENDIF(DATADIR)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/3rdparty/")
-find_package(TBB)
+  find_package(TBB)
 include_directories(${TBB_INCLUDE_DIRS})
 
 
