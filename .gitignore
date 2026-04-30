@@ -14,6 +14,9 @@ data/
 3rdparty/tpch-dbgen/
 3rdparty/ssb-dbgen/
 
+# STREAM compiled binary (source is tracked)
+3rdparty/stream/stream
+
 # Slurm job logs
 results/
 
@@ -52,3 +55,6 @@ results/
 
 # Tracked benchmark outputs (override *.out for these)
 !clean-results/*.out
+
+# Tracked figures (override *.pdf for these)
+!figures/*.pdf
