@@ -20,3 +20,4 @@ Runs in this directory were produced by the binary at `build/release/` compiled 
 | `ssb_sf1_<jobid>.out` | `slurm/run_ssb_sf1.sh` |
 | `ssb_sf30_<jobid>.out` | `slurm/run_ssb_sf30.sh` |
 | `ssb_sf30_mt_<jobid>.out` | `slurm/run_ssb_sf30_mt.sh` |
+| `stream_numa_<jobid>.out` | `slurm/run_stream_numa.sh` |

@@ -183,6 +183,7 @@ Submit from the repo root -- the scripts' `--output=results/...` directives are 
 | `run_ssb_sf1.sh`     | SSB SF1, single-threaded, 5 reps    | `data/ssb/1/`     |
 | `run_ssb_sf30.sh`    | SSB SF30, single-threaded, 5 reps   | `data/ssb/30/`    |
 | `run_ssb_sf30_mt.sh` | SSB SF30, threads={1,16,32}, 5 reps each | `data/ssb/30/`    |
+| `run_stream_numa.sh` | STREAM bandwidth, 4 NUMA configs (local 16t, remote 16t, split 16t, full 32t) | none (build STREAM first) |
 
 #### Pinning to a specific node
 
@@ -191,6 +192,18 @@ For final measurement runs, you can pin to one physical node so all results come
 ```bash
 sbatch --nodelist=adroit-16 slurm/run_ssb_sf1.sh
 ```
+
+#### Building STREAM (for `run_stream_numa.sh`)
+
+The bandwidth benchmark requires a one-time build:
+
+```bash
+gcc -O3 -fopenmp -march=skylake-avx512 \
+    -DSTREAM_ARRAY_SIZE=80000000 -DNTIMES=20 \
+    3rdparty/stream/stream.c -o 3rdparty/stream/stream
+```
+
+The source is vendored under `3rdparty/stream/stream.c` (John D. McCalpin's STREAM v5.10).
 
 ## Notes
 

@@ -92,6 +92,8 @@ struct PerfEvents {
          add("stores", "mem_inst_retired.all_stores");
          add("loads", "mem_inst_retired.all_loads");
          add("mem_stall", "cycle_activity.stalls_mem_any");
+         add("local_dram", "mem_load_l3_miss_retired.local_dram");
+         add("remote_dram", "mem_load_l3_miss_retired.remote_dram");
          //add("page-faults", "page-faults");
       } else {
          add("cycles", PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
