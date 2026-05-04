@@ -19,6 +19,7 @@ from pathlib import Path
 try:
     import matplotlib.pyplot as plt
     from matplotlib.patches import Patch
+    from matplotlib.ticker import AutoMinorLocator, MaxNLocator
 except ModuleNotFoundError as exc:
     raise SystemExit(
         "matplotlib is required to plot results; install it with "
@@ -298,8 +299,8 @@ def plot_memory_stalls(records_by_run, scale_factors, queries, out):
         ncols + 1,
         width_ratios=[1] * ncols + [0.12],
         height_ratios=[0.30] + [1] * nrows,
-        wspace=0.04,
-        hspace=0.10,
+        wspace=0.07,
+        hspace=0.13,
     )
 
     for col_idx, (_, engine_label, _) in enumerate(ENGINES):
@@ -311,6 +312,7 @@ def plot_memory_stalls(records_by_run, scale_factors, queries, out):
     corner_ax.axis("off")
 
     x = list(range(len(scale_factors)))
+    bar_width = 0.78
     for row_idx, query in enumerate(queries):
         y_max = max(1, row_cycle_max(records_by_run, scale_factors, query) * 1.12)
         for col_idx, (engine, engine_label, _) in enumerate(ENGINES):
@@ -328,29 +330,44 @@ def plot_memory_stalls(records_by_run, scale_factors, queries, out):
                 for scale_factor in scale_factors
             ]
 
-            ax.bar(x, other, width=0.82, color=STALL_COLORS["other"])
+            ax.bar(
+                x,
+                other,
+                width=bar_width,
+                color=STALL_COLORS["other"],
+                edgecolor="none",
+                linewidth=0,
+            )
             ax.bar(
                 x,
                 mem_stall,
-                width=0.82,
+                width=bar_width,
                 bottom=other,
                 color=STALL_COLORS["mem_stall"],
+                edgecolor="none",
+                linewidth=0,
             )
 
             ax.set_ylim(0, y_max)
             ax.set_axisbelow(True)
             ax.set_xlim(-0.5, len(scale_factors) - 0.5)
             ax.set_xticks(x)
-            ax.grid(axis="y", color="#e6e6e6", linewidth=0.7)
-            ax.grid(axis="x", color="#eeeeee", linewidth=0.7)
-            ax.tick_params(axis="both", labelsize=8)
+            ax.yaxis.set_major_locator(MaxNLocator(nbins=4, min_n_ticks=4))
+            ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+            ax.grid(axis="y", which="major", color="#d9d9d9", linewidth=0.45)
+            ax.grid(axis="y", which="minor", color="#eeeeee", linewidth=0.30)
+            ax.grid(axis="x", which="major", color="#d9d9d9", linewidth=0.45)
+            ax.tick_params(axis="both", labelsize=8, colors="#4d4d4d")
+            ax.tick_params(axis="y", which="minor", length=0)
             for spine in ax.spines.values():
+                spine.set_visible(True)
+                spine.set_color("#333333")
                 spine.set_linewidth(0.9)
 
             if col_idx == 0:
                 ax.tick_params(axis="y", labelsize=8)
             else:
-                ax.tick_params(axis="y", labelleft=False)
+                ax.tick_params(axis="y", left=False, labelleft=False)
 
             if row_idx == nrows - 1:
                 ax.set_xticklabels(scale_factors)
