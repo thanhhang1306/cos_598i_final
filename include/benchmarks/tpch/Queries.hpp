@@ -25,6 +25,10 @@ struct Q1Builder : public Query, private vectorwise::QueryBuilder {
       sum_base_price,
       sum_disc_price,
       sum_charge,
+      sum_discount,
+      avg_qty,
+      avg_price,
+      avg_disc,
       count_order
    };
    struct Q1 {
@@ -84,6 +88,37 @@ q3_hyper(runtime::Database& db,
          size_t nrThreads = std::thread::hardware_concurrency());
 std::unique_ptr<runtime::Query>
 q3_vectorwise(runtime::Database& db,
+              size_t nrThreads = std::thread::hardware_concurrency(),
+              size_t vectorSize = 1024);
+
+struct Q4Builder : private vectorwise::QueryBuilder {
+   enum {
+      sel_lineitem,
+      lineitem_orderkey,
+      sel_order,
+      sel_order2,
+      order_matches,
+      order_matches_grouped,
+      orderpriority,
+      order_count_input,
+      order_count
+   };
+   struct Q4 {
+      types::Date c1 = types::Date::castString("1993-07-01");
+      types::Date c2 = types::Date::castString("1993-10-01");
+      std::unique_ptr<vectorwise::Operator> rootOp;
+   };
+   Q4Builder(runtime::Database& db, vectorwise::SharedStateManager& shared,
+             size_t size = 1024)
+       : QueryBuilder(db, shared, size) {}
+   std::unique_ptr<Q4> getQuery();
+};
+
+std::unique_ptr<runtime::Query>
+q4_hyper(runtime::Database& db,
+         size_t nrThreads = std::thread::hardware_concurrency());
+std::unique_ptr<runtime::Query>
+q4_vectorwise(runtime::Database& db,
               size_t nrThreads = std::thread::hardware_concurrency(),
               size_t vectorSize = 1024);
 
@@ -203,6 +238,187 @@ std::unique_ptr<runtime::Query>
 q9_vectorwise(runtime::Database& db,
               size_t nrThreads = std::thread::hardware_concurrency(),
               size_t vectorSize = 1024);
+
+struct Q10Builder : private vectorwise::QueryBuilder {
+   enum {
+      sel_order,
+      sel_order2,
+      sel_lineitem,
+      order_line,
+      o_custkey,
+      result_proj_minus,
+      revenue,
+      group_c_custkey,
+      group_revenue
+   };
+   struct Q10 {
+      types::Date c1 = types::Date::castString("1993-10-01");
+      types::Date c2 = types::Date::castString("1994-01-01");
+      types::Char<1> returned = types::Char<1>::castString("R");
+      types::Numeric<12, 2> one =
+          types::Numeric<12, 2>::castString("1.00");
+      std::unique_ptr<vectorwise::Operator> rootOp;
+   };
+   Q10Builder(runtime::Database& db, vectorwise::SharedStateManager& shared,
+              size_t size = 1024)
+       : QueryBuilder(db, shared, size) {}
+   std::unique_ptr<Q10> getQuery();
+};
+
+runtime::Relation
+q10_hyper(runtime::Database& db,
+          size_t nrThreads = std::thread::hardware_concurrency());
+runtime::Relation
+q10_vectorwise(runtime::Database& db,
+               size_t nrThreads = std::thread::hardware_concurrency(),
+               size_t vectorSize = 1024);
+
+struct Q12Builder : private vectorwise::QueryBuilder {
+   enum {
+      sel_lineitem,
+      sel_lineitem2,
+      lineitem_orders,
+      lineitem_orders_grouped,
+      o_orderpriority,
+      high_line_count_input,
+      low_line_count_input,
+      l_shipmode,
+      high_line_count,
+      low_line_count
+   };
+   struct Q12 {
+      types::Date c1 = types::Date::castString("1994-01-01");
+      types::Date c2 = types::Date::castString("1995-01-01");
+      types::Char<10> mail = types::Char<10>::castString("MAIL");
+      types::Char<10> ship = types::Char<10>::castString("SHIP");
+      types::Char<15> highPriorities[2] = {
+          types::Char<15>::castString("1-URGENT"),
+          types::Char<15>::castString("2-HIGH")};
+      std::unique_ptr<vectorwise::Operator> rootOp;
+   };
+   Q12Builder(runtime::Database& db, vectorwise::SharedStateManager& shared,
+              size_t size = 1024)
+       : QueryBuilder(db, shared, size) {}
+   std::unique_ptr<Q12> getQuery();
+};
+
+std::unique_ptr<runtime::Query>
+q12_hyper(runtime::Database& db,
+          size_t nrThreads = std::thread::hardware_concurrency());
+std::unique_ptr<runtime::Query>
+q12_vectorwise(runtime::Database& db,
+               size_t nrThreads = std::thread::hardware_concurrency(),
+               size_t vectorSize = 1024);
+
+struct Q14Builder : public vectorwise::QueryBuilder {
+   enum {
+      promo_part,
+      sel_lineitem,
+      sel_lineitem2,
+      lineitem_part,
+      result_proj_minus,
+      revenue,
+      promo_revenue_input
+   };
+   struct Q14 {
+      types::Date c1 = types::Date::castString("1995-09-01");
+      types::Date c2 = types::Date::castString("1995-10-01");
+      types::Numeric<12, 2> one =
+          types::Numeric<12, 2>::castString("1.00");
+      types::Varchar<25> promo = types::Varchar<25>::castString("PROMO");
+      int64_t promoRevenue = 0;
+      int64_t totalRevenue = 0;
+      std::unique_ptr<vectorwise::Operator> rootOp;
+   };
+   Q14Builder(runtime::Database& db, vectorwise::SharedStateManager& shared,
+              size_t size = 1024)
+       : QueryBuilder(db, shared, size) {}
+   std::unique_ptr<Q14> getQuery();
+};
+
+runtime::Relation
+q14_hyper(runtime::Database& db,
+          size_t nrThreads = std::thread::hardware_concurrency());
+runtime::Relation
+q14_vectorwise(runtime::Database& db,
+               size_t nrThreads = std::thread::hardware_concurrency(),
+               size_t vectorSize = 1024);
+
+struct Q15Builder : public vectorwise::QueryBuilder {
+   enum {
+      sel_lineitem,
+      sel_lineitem2,
+      compact_suppkey,
+      result_proj_minus,
+      revenue,
+      supplier_no,
+      total_revenue
+   };
+   struct Q15 {
+      types::Date c1 = types::Date::castString("1996-01-01");
+      types::Date c2 = types::Date::castString("1996-04-01");
+      types::Numeric<12, 2> one =
+          types::Numeric<12, 2>::castString("1.00");
+      int32_t zero = 0;
+      std::unique_ptr<vectorwise::Operator> rootOp;
+   };
+   Q15Builder(runtime::Database& db, vectorwise::SharedStateManager& shared,
+              size_t size = 1024)
+       : QueryBuilder(db, shared, size) {}
+   std::unique_ptr<Q15> getQuery();
+};
+
+runtime::Relation
+q15_hyper(runtime::Database& db,
+          size_t nrThreads = std::thread::hardware_concurrency());
+runtime::Relation
+q15_vectorwise(runtime::Database& db,
+               size_t nrThreads = std::thread::hardware_concurrency(),
+               size_t vectorSize = 1024);
+
+struct Q17Builder : public vectorwise::QueryBuilder {
+   enum {
+      group_l_partkey,
+      group_quantity,
+      group_count_input,
+      group_count,
+      sel_part_brand,
+      sel_part,
+      part_matches,
+      part_quantity,
+      part_count,
+      part_count_x5,
+      part_quantity_minus_one,
+      part_threshold,
+      lineitem_matches,
+      lineitem_threshold,
+      compact_quantity,
+      compact_extendedprice,
+      sel_lineitem
+   };
+   struct Q17 {
+      types::Char<10> brand = types::Char<10>::castString("Brand#23");
+      types::Char<10> container = types::Char<10>::castString("MED BOX");
+      int64_t five = 5;
+      int64_t minusOne = -1;
+      int64_t zero = 0;
+      int64_t sum_extendedprice = 0;
+      std::unique_ptr<vectorwise::Operator> rootOp;
+   };
+
+   Q17Builder(runtime::Database& db, vectorwise::SharedStateManager& shared,
+              size_t size = 1024)
+       : QueryBuilder(db, shared, size) {}
+   std::unique_ptr<Q17> getQuery();
+};
+
+runtime::Relation
+q17_hyper(runtime::Database& db,
+          size_t nrThreads = std::thread::hardware_concurrency());
+runtime::Relation
+q17_vectorwise(runtime::Database& db,
+               size_t nrThreads = std::thread::hardware_concurrency(),
+               size_t vectorSize = 1024);
 
 struct Q18Builder : public Query, private vectorwise::QueryBuilder {
    enum {

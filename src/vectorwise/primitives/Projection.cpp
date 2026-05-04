@@ -2,6 +2,7 @@
 #include "common/runtime/Hash.hpp"
 #include "vectorwise/Operations.hpp"
 #include "vectorwise/Primitives.hpp"
+#include <cstring>
 #include <functional>
 
 using namespace types;
@@ -52,6 +53,43 @@ template <typename int64_t> struct ExtractYear {
 };
 F2 apply_extract_year_col = (F2)&apply_col<Date, Integer, ExtractYear>;
 F3 apply_extract_year_sel_col = (F3)&apply_sel_col<Date, Integer, ExtractYear>;
+
+pos_t proj_q12_high_priority_count_impl(pos_t n, int64_t* RES result,
+                                         Char_15* RES priorities,
+                                         Char_15* RES highPriorities) {
+   auto& urgent = highPriorities[0];
+   auto& high = highPriorities[1];
+   for (uint64_t i = 0; i < n; ++i)
+      result[i] = (priorities[i] == urgent || priorities[i] == high);
+   return n;
+}
+
+pos_t proj_q12_low_priority_count_impl(pos_t n, int64_t* RES result,
+                                        Char_15* RES priorities,
+                                        Char_15* RES highPriorities) {
+   auto& urgent = highPriorities[0];
+   auto& high = highPriorities[1];
+   for (uint64_t i = 0; i < n; ++i)
+      result[i] = !(priorities[i] == urgent || priorities[i] == high);
+   return n;
+}
+
+pos_t proj_q14_promo_flag_impl(pos_t n, int64_t* RES result,
+                                Varchar_25* RES partTypes,
+                                Varchar_25* RES prefix) {
+   auto len = prefix->len;
+   auto value = prefix->value;
+   for (uint64_t i = 0; i < n; ++i)
+      result[i] = partTypes[i].len >= len &&
+                  std::memcmp(partTypes[i].value, value, len) == 0;
+   return n;
+}
+
+F3 proj_q12_high_priority_count =
+    (F3)&proj_q12_high_priority_count_impl;
+F3 proj_q12_low_priority_count =
+    (F3)&proj_q12_low_priority_count_impl;
+F3 proj_q14_promo_flag = (F3)&proj_q14_promo_flag_impl;
 
 EACH_ARITH(EACH_TYPE_FULL, MK_PROJ_COLCOL)
 EACH_ARITH(EACH_TYPE_FULL, MK_PROJ_COLVAL) // with second arg const

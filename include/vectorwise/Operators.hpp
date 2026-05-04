@@ -216,6 +216,11 @@ class Hashjoin : public BinaryOperator {
    } contCon;
    bool consumed = false;
    std::vector<std::pair<void*, size_t>> allocations;
+   bool keyEqualityChecksInitialized = false;
+   std::vector<EqualityCheck*> keyEqualityChecks;
+   void initKeyEqualityChecks();
+   bool candidateKeysEqual(runtime::Hashmap::EntryHeader* entry,
+                           pos_t probeIdx);
 
  public:
    size_t followupBufferSize = 1025;
@@ -239,6 +244,7 @@ class Hashjoin : public BinaryOperator {
 
    /// function which computes join result into buildMatches and probeMatches
    pos_t (Hashjoin::*join)();
+   bool joinChecksKeyEquality = false;
    /// computes join result into buildMatches and probeMatches
    pos_t joinAll();
    /// computes join result into buildMatches and probeMatches
@@ -249,6 +255,8 @@ class Hashjoin : public BinaryOperator {
    /// computes join result into buildMatches and probeMatches
    /// Implementation: Using AVX 512 SIMD
    pos_t joinAllSIMD();
+   /// computes right/probe semi-join result into probeMatches
+   pos_t joinRightSemi();
    /// computes join result into buildMatches and probeMatches, respecting
    /// selection vector probeSel for probe side
    pos_t joinSel();

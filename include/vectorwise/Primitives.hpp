@@ -1119,6 +1119,7 @@ using Char_12 = types::Char<12>;
 using Char_15 = types::Char<15>;
 using Char_25 = types::Char<25>;
 using Char_55 = types::Char<55>;
+using Varchar_25 = types::Varchar<25>;
 using Varchar_55 = types::Varchar<55>;
 
 /// apply all types as first argument to m, pass c as second arg
@@ -1237,6 +1238,9 @@ EACH_ARITH_NON_COMM(EACH_TYPE_FULL, MK_PROJ_SEL_VALCOL_DECL)
 
 extern F2 apply_extract_year_col;
 extern F3 apply_extract_year_sel_col;
+extern F3 proj_q12_high_priority_count;
+extern F3 proj_q12_low_priority_count;
+extern F3 proj_q14_promo_flag;
 
 EACH_ARITH(EACH_TYPE_FULL, MK_AGGR_STATIC_COL_DECL)
 EACH_ARITH(EACH_TYPE_FULL, MK_AGGR_STATIC_SEL_COL_DECL)

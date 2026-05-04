@@ -55,8 +55,11 @@ int main(int argc, char* argv[]) {
    bool clearCaches = false;
    if (argc > 3) nrThreads = atoi(argv[3]);
 
-   std::unordered_set<std::string> q = {"1h", "1v", "3h", "3v", "5h",  "5v",
-                                        "6h", "6v", "9h", "9v", "18h", "18v"};
+   std::unordered_set<std::string> q = {
+       "1h",  "1v",  "3h",  "3v",  "4h",  "4v", "5h",
+       "5v",  "6h",  "6v",  "9h",  "9v",  "10h", "10v",
+       "12h", "12v", "14h", "14v", "15h", "15v", "17h",
+       "17v", "18h", "18v"};
 
    if (auto v = std::getenv("vectorSize")) vectorSize = atoi(v);
    if (auto v = std::getenv("SIMDhash")) conf.useSimdHash = atoi(v);
@@ -108,6 +111,23 @@ int main(int argc, char* argv[]) {
              escape(&result);
           },
           repetitions);
+   if (q.count("4h"))
+      e.timeAndProfile("q4 hyper     ", nrTuples(tpch, {"orders", "lineitem"}),
+                       [&]() {
+                          if (clearCaches) clearOsCaches();
+                          auto result = q4_hyper(tpch, nrThreads);
+                          escape(&result);
+                       },
+                       repetitions);
+   if (q.count("4v"))
+      e.timeAndProfile("q4 vectorwise", nrTuples(tpch, {"orders", "lineitem"}),
+                       [&]() {
+                          if (clearCaches) clearOsCaches();
+                          auto result =
+                              q4_vectorwise(tpch, nrThreads, vectorSize);
+                          escape(&result);
+                       },
+                       repetitions);
    if (q.count("5h"))
       e.timeAndProfile("q5 hyper     ",
                        nrTuples(tpch, {"supplier", "region", "nation",
@@ -167,6 +187,100 @@ int main(int argc, char* argv[]) {
                           escape(&result);
                        },
                        repetitions);
+   if (q.count("10h"))
+      e.timeAndProfile(
+          "q10 hyper     ",
+          nrTuples(tpch, {"customer", "orders", "lineitem", "nation"}),
+          [&]() {
+             if (clearCaches) clearOsCaches();
+             auto result = q10_hyper(tpch, nrThreads);
+             escape(&result);
+          },
+          repetitions);
+   if (q.count("10v"))
+      e.timeAndProfile(
+          "q10 vectorwise",
+          nrTuples(tpch, {"customer", "orders", "lineitem", "nation"}),
+          [&]() {
+             if (clearCaches) clearOsCaches();
+             auto result = q10_vectorwise(tpch, nrThreads, vectorSize);
+             escape(&result);
+          },
+          repetitions);
+   if (q.count("12h"))
+      e.timeAndProfile("q12 hyper     ",
+                       nrTuples(tpch, {"orders", "lineitem"}),
+                       [&]() {
+                          if (clearCaches) clearOsCaches();
+                          auto result = q12_hyper(tpch, nrThreads);
+                          escape(&result);
+                       },
+                       repetitions);
+   if (q.count("12v"))
+      e.timeAndProfile("q12 vectorwise",
+                       nrTuples(tpch, {"orders", "lineitem"}),
+                       [&]() {
+                          if (clearCaches) clearOsCaches();
+                          auto result =
+                              q12_vectorwise(tpch, nrThreads, vectorSize);
+                          escape(&result);
+                       },
+                       repetitions);
+   if (q.count("14h"))
+      e.timeAndProfile("q14 hyper     ", nrTuples(tpch, {"part", "lineitem"}),
+                       [&]() {
+                          if (clearCaches) clearOsCaches();
+                          auto result = q14_hyper(tpch, nrThreads);
+                          escape(&result);
+                       },
+                       repetitions);
+   if (q.count("14v"))
+      e.timeAndProfile("q14 vectorwise",
+                       nrTuples(tpch, {"part", "lineitem"}),
+                       [&]() {
+                          if (clearCaches) clearOsCaches();
+                          auto result =
+                              q14_vectorwise(tpch, nrThreads, vectorSize);
+                          escape(&result);
+                       },
+                       repetitions);
+   if (q.count("15h"))
+      e.timeAndProfile("q15 hyper     ",
+                       nrTuples(tpch, {"supplier", "lineitem"}),
+                       [&]() {
+                          if (clearCaches) clearOsCaches();
+                          auto result = q15_hyper(tpch, nrThreads);
+                          escape(&result);
+                       },
+                       repetitions);
+   if (q.count("15v"))
+      e.timeAndProfile("q15 vectorwise",
+                       nrTuples(tpch, {"supplier", "lineitem"}),
+                       [&]() {
+                          if (clearCaches) clearOsCaches();
+                          auto result =
+                              q15_vectorwise(tpch, nrThreads, vectorSize);
+                          escape(&result);
+                       },
+                       repetitions);
+   if (q.count("17h"))
+      e.timeAndProfile(
+          "q17 hyper     ", nrTuples(tpch, {"part", "lineitem", "lineitem"}),
+          [&]() {
+             if (clearCaches) clearOsCaches();
+             auto result = q17_hyper(tpch, nrThreads);
+             escape(&result);
+          },
+          repetitions);
+   if (q.count("17v"))
+      e.timeAndProfile(
+          "q17 vectorwise", nrTuples(tpch, {"part", "lineitem", "lineitem"}),
+          [&]() {
+             if (clearCaches) clearOsCaches();
+             auto result = q17_vectorwise(tpch, nrThreads, vectorSize);
+             escape(&result);
+          },
+          repetitions);
    if (q.count("18h"))
       e.timeAndProfile(
           "q18 hyper     ",
