@@ -28,8 +28,8 @@ except ModuleNotFoundError as exc:
     ) from exc
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_RUNTIME_OUT = ROOT / "figures" / "sf1_new_query_runtimes.png"
-DEFAULT_STALL_OUT = ROOT / "figures" / "new_query_memory_stalls.png"
+DEFAULT_RUNTIME_OUT = ROOT / "figures" / "ext_sf1_query_runtimes.png"
+DEFAULT_STALL_OUT = ROOT / "figures" / "ext_memory_stalls.png"
 
 ENGINES = [
     ("hyper", "Typer", "#F8766D"),
@@ -291,16 +291,17 @@ def style_strip(ax):
 def plot_memory_stalls(records_by_run, scale_factors, queries, out):
     nrows = len(queries)
     ncols = len(ENGINES)
+    top_strip_ratio = 0.44
     fig_width = max(5.8, 2.3 + 0.5 * len(scale_factors) * ncols)
-    fig_height = max(3.8, 1.1 + 0.72 * nrows)
+    fig_height = max(3.9, 1.2 + 0.72 * nrows)
     fig = plt.figure(figsize=(fig_width, fig_height))
     grid = fig.add_gridspec(
         nrows + 1,
         ncols + 1,
         width_ratios=[1] * ncols + [0.12],
-        height_ratios=[0.30] + [1] * nrows,
-        wspace=0.07,
-        hspace=0.13,
+        height_ratios=[top_strip_ratio] + [1] * nrows,
+        wspace=0.045,
+        hspace=0.17,
     )
 
     for col_idx, (_, engine_label, _) in enumerate(ENGINES):
@@ -311,8 +312,10 @@ def plot_memory_stalls(records_by_run, scale_factors, queries, out):
     corner_ax = fig.add_subplot(grid[0, ncols])
     corner_ax.axis("off")
 
-    x = list(range(len(scale_factors)))
-    bar_width = 0.78
+    x_spacing = 0.70
+    x = [idx * x_spacing for idx in range(len(scale_factors))]
+    bar_width = 0.64
+    edge_padding = 0.64 * x_spacing
     for row_idx, query in enumerate(queries):
         y_max = max(1, row_cycle_max(records_by_run, scale_factors, query) * 1.12)
         for col_idx, (engine, engine_label, _) in enumerate(ENGINES):
@@ -350,9 +353,11 @@ def plot_memory_stalls(records_by_run, scale_factors, queries, out):
 
             ax.set_ylim(0, y_max)
             ax.set_axisbelow(True)
-            ax.set_xlim(-0.5, len(scale_factors) - 0.5)
+            ax.set_xlim(-edge_padding, x[-1] + edge_padding)
             ax.set_xticks(x)
-            ax.yaxis.set_major_locator(MaxNLocator(nbins=4, min_n_ticks=4))
+            ax.yaxis.set_major_locator(
+                MaxNLocator(nbins=4, min_n_ticks=4, prune="upper")
+            )
             ax.yaxis.set_minor_locator(AutoMinorLocator(2))
             ax.grid(axis="y", which="major", color="#d9d9d9", linewidth=0.45)
             ax.grid(axis="y", which="minor", color="#eeeeee", linewidth=0.30)
@@ -400,9 +405,11 @@ def plot_memory_stalls(records_by_run, scale_factors, queries, out):
         handleheight=0.8,
         bbox_to_anchor=(0.5, 0.995),
     )
-    fig.supylabel("Cycles / Tuple", x=0.03, fontsize=11)
-    fig.supxlabel("Data Size (TPC-H Scale Factor)", y=0.03, fontsize=11)
-    fig.subplots_adjust(left=0.12, right=0.92, bottom=0.13, top=0.88)
+    fig.supylabel("Cycles / Tuple", x=0.03, fontsize=11, fontweight=500)
+    fig.supxlabel(
+        "Data Size (TPC-H Scale Factor)", y=0.03, fontsize=11, fontweight=500
+    )
+    fig.subplots_adjust(left=0.12, right=0.965, bottom=0.13, top=0.88)
     save_png(fig, out)
     plt.close(fig)
 
