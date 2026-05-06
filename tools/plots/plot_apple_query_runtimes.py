@@ -5,7 +5,7 @@ QUERIES = ["q1", "q3", "q6", "q9", "q18", "q5", "q10", "q11", "q12", "q13"]
 BOLD_QUERIES = {"q1", "q3", "q6", "q9", "q18"}
 
 RUNS = [
-    ("apple", "clean-results/apple_results.out"),
+    ("apple", "clean-results/baseline/apple_results.out"),
 ]
 
 import argparse

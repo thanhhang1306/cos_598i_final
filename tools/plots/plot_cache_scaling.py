@@ -6,6 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[2]
+RESULTS = ROOT / "clean-results" / "baseline"
 OUT = ROOT / "figures" / "cache_scaling.pdf"
 
 # Scale factor -> .out file. Only includes SFs whose .out exists; missing
@@ -18,7 +19,7 @@ SOURCES = {
 }
 
 # Auto-discover the latest tpch_sf30_*.out (so we don't hardcode jobid)
-sf30_candidates = sorted((ROOT / "clean-results").glob("tpch_sf30_*.out"))
+sf30_candidates = sorted(RESULTS.glob("tpch_sf30_*.out"))
 if sf30_candidates:
     SOURCES[30] = sf30_candidates[-1].name
 
@@ -43,7 +44,7 @@ def main():
     for sf, fname in SOURCES.items():
         if not fname:
             continue
-        path = ROOT / "clean-results" / fname
+        path = RESULTS / fname
         if not path.exists():
             continue
         sf_data[sf] = parse_cycles(path)

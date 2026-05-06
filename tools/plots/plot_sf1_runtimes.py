@@ -6,7 +6,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "clean-results" / "tpch_sf1_3161190.out"
+SRC = ROOT / "clean-results" / "baseline" / "tpch_sf1_3161190.out"
 OUT = ROOT / "figures" / "sf1_runtimes.pdf"
 
 QUERIES = ["q1", "q3", "q6", "q9", "q18"]

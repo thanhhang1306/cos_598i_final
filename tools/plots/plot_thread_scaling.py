@@ -7,7 +7,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = sorted((ROOT / "clean-results").glob("tpch_sf10_mt_*.out"))[-1]
+SRC = sorted((ROOT / "clean-results" / "baseline").glob("tpch_sf10_mt_*.out"))[-1]
 OUT = ROOT / "figures" / "thread_scaling.pdf"
 
 QUERIES = ["q1", "q3", "q6", "q9", "q18"]

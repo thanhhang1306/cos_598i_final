@@ -54,7 +54,10 @@ results/
 *.app
 
 # Tracked benchmark outputs (override *.out for these)
-!clean-results/*.out
+!clean-results/baseline/
+!clean-results/baseline/*.out
+!clean-results/extension/
+!clean-results/extension/*.out
 
 # Tracked figures (override *.pdf for these)
 !figures/*.pdf

@@ -186,6 +186,7 @@ Submit from the repo root -- the scripts' `--output=results/...` directives are 
 | `run_ssb_sf1.sh`     | SSB SF1, single-threaded, 5 reps    | `data/ssb/1/`     |
 | `run_ssb_sf30.sh`    | SSB SF30, single-threaded, 5 reps   | `data/ssb/30/`    |
 | `run_ssb_sf30_mt.sh` | SSB SF30, threads={1,16,32}, 5 reps each | `data/ssb/30/`    |
+| `run_ssb_sf30_vec.sh`| SSB SF30, vectorSize sweep, 1 thread, 5 reps each | `data/ssb/30/`    |
 | `run_stream_numa.sh` | STREAM bandwidth, 4 NUMA configs (local 16t, remote 16t, split 16t, full 32t) | none (build STREAM first) |
 
 #### Pinning to a specific node
@@ -207,6 +208,44 @@ gcc -O3 -fopenmp -march=skylake-avx512 \
 ```
 
 The source is vendored under `3rdparty/stream/stream.c` (John D. McCalpin's STREAM v5.10).
+
+## Results and Figures
+
+The repository includes a cleaned baseline result snapshot and the plotting
+scripts used for the report.
+
+- `clean-results/baseline/` stores selected Slurm `.out` logs for the baseline
+  reproduction. `clean-results/extension/` is reserved for extension-query
+  result logs. The live `results/` directory is still ignored, so copy or
+  curate final runs into one of these clean result folders before committing
+  them.
+- `figures/` stores generated plots. Most report plots are tracked as both
+- `tools/plots/` contains standalone Matplotlib scripts that parse the tracked
+  baseline result logs and regenerate the figures.
+
+Common plot regeneration commands:
+
+```bash
+python3 tools/plots/plot_sf1_runtimes.py
+python3 tools/plots/plot_cache_scaling.py
+python3 tools/plots/plot_thread_scaling.py
+python3 tools/plots/plot_vec_sweep.py
+python3 tools/plots/plot_simd_ablation_heatmap.py
+python3 tools/plots/plot_apple_query_runtimes.py
+```
+
+`plot_new_query_runtimes.py` is configurable at the top of the file and can also
+take explicit benchmark outputs:
+
+```bash
+python3 tools/plots/plot_new_query_runtimes.py results/tpch_sf1_all.out --scale-factors 1
+```
+
+The plotting scripts require Matplotlib:
+
+```bash
+python3 -m pip install --user matplotlib
+```
 
 ## Notes
 

@@ -10,7 +10,7 @@ from matplotlib.colors import TwoSlopeNorm
 
 
 ROOT = Path(__file__).resolve().parents[2]
-RESULTS = ROOT / "clean-results"
+RESULTS = ROOT / "clean-results" / "baseline"
 OUT_DIR = ROOT / "figures"
 
 QUERIES = ["q1", "q3", "q6", "q9", "q18"]
