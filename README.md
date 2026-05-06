@@ -211,17 +211,18 @@ The source is vendored under `3rdparty/stream/stream.c` (John D. McCalpin's STRE
 
 ## Results and Figures
 
-The repository includes a cleaned baseline result snapshot and the plotting
+The repository includes cleaned benchmark result snapshots and the plotting
 scripts used for the report.
 
 - `clean-results/baseline/` stores selected Slurm `.out` logs for the baseline
-  reproduction. `clean-results/extension/` is reserved for extension-query
-  result logs. The live `results/` directory is still ignored, so copy or
-  curate final runs into one of these clean result folders before committing
-  them.
+  reproduction. `clean-results/extension/` stores extension-query `.out/.err`
+  logs and checkpointed stderr logs from earlier extension runs. The live
+  `results/` directory is still ignored, so copy or curate final runs into one
+  of these clean result folders before committing them.
 - `figures/` stores generated plots. Most report plots are tracked as both
+  `.pdf` and `.png`; the Apple comparison plots are currently tracked as `.png`.
 - `tools/plots/` contains standalone Matplotlib scripts that parse the tracked
-  baseline result logs and regenerate the figures.
+  clean result logs and regenerate figures under `figures/`.
 
 Common plot regeneration commands:
 
@@ -234,11 +235,19 @@ python3 tools/plots/plot_simd_ablation_heatmap.py
 python3 tools/plots/plot_apple_query_runtimes.py
 ```
 
-`plot_new_query_runtimes.py` is configurable at the top of the file and can also
-take explicit benchmark outputs:
+The extension plotting scripts are configurable at the top of each file and can
+also take explicit benchmark outputs:
 
 ```bash
-python3 tools/plots/plot_new_query_runtimes.py results/tpch_sf1_all.out --scale-factors 1
+python3 tools/plots/plot_new_query_runtimes.py \
+    clean-results/extension/tpch_sf1_3189190.out \
+    clean-results/extension/tpch_sf3_3189201.out \
+    clean-results/extension/tpch_sf10_3189202.out \
+    clean-results/extension/tpch_sf30_3189203.out \
+    --scale-factors 1 3 10 30
+
+python3 tools/plots/plot_tpch_vector_sizes.py \
+    clean-results/extension/tpch_sf1_vec_3189204.out
 ```
 
 The plotting scripts require Matplotlib:

@@ -58,6 +58,8 @@ results/
 !clean-results/baseline/*.out
 !clean-results/extension/
 !clean-results/extension/*.out
+!clean-results/extension/*/
+!clean-results/extension/**/*.out
 
 # Tracked figures (override *.pdf for these)
 !figures/*.pdf
