@@ -1,0 +1,4 @@
+Unknown MSR in event file 0x00
+close(fd) == 0: Disk quota exceeded
+terminate called without an active exception
+/var/spool/slurmd/job3186575/slurm_script: line 39: 2332685 Aborted                 (core dumped) numactl --cpunodebind=0 --membind=0 "$BIN" 5 "$DATA" 1
